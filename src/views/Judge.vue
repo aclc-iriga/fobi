@@ -45,35 +45,22 @@
 					:key="team.id"
 					:class="{ 'bg-grey-lighten-4': coordinates.y == teamIndex }"
 				>
-					<td class="text-uppercase text-center text-h4 font-weight-bold text-grey-darken-4">
+					<td class="text-uppercase text-right text-h5 font-weight-bold text-grey-darken-4">
 						{{ teamIndex + 1 }}
 					</td>
-					<td class="text-uppercase text-center font-weight-bold" :style="{ 'color' : team.color }">
-						<v-col align="center">
-							<v-img
-								:src="`${$store.getters.appURL}/crud/uploads/${team.avatar}`"
-								:lazy-src="`${$store.getters.appURL}/crud/uploads/${team.avatar}`"
-								aspect-ratio="1"
-								:alt="`${team.name} Logo`"
-								height="100"
-								width="100"
-							>
-								<template v-slot:placeholder>
-									<v-row
-										class="fill-height ma-0"
-										align="center"
-										justify="center"
-									>
-										<v-progress-circular
-											indeterminate
-											color="grey-lighten-5"
-										>
-										</v-progress-circular>
-									</v-row>
-								</template>
-							</v-img>
-						</v-col> 
-						{{ team.name }}
+					<td>
+                        <div class="d-flex">
+                            <v-avatar size="42" class="mr-2">
+                                <v-img
+                                    cover
+                                    :src="`${$store.getters.appURL}/crud/uploads/${team.avatar}`"
+                                />
+                            </v-avatar>
+                            <div>
+                                <p class="ma-0 text-body-1 text-uppercase font-weight-bold">{{ team.country }}</p>
+                                <p class="ma-0" style="margin-top: -5px !important;"><small>{{ team.name }}</small></p>
+                            </div>
+                        </div>
 					</td>
 					<td
 						v-for="(criterion, criterionIndex) in criteria"
@@ -149,7 +136,7 @@
 							@focus.passive="updateCoordinates(criteria.length, teamIndex)"
 						/>
 					</td>
-					<td class="text-center"> {{ ranks[`team_${team.id}`].toFixed(2) }}</td>
+					<td class="text-center">{{ ranks[`team_${team.id}`].toFixed(2) }}</td>
 				</tr>
 			</tbody>
 			<!--	Dialog	  -->
@@ -502,68 +489,60 @@ export default {
 	},
 	computed: {
 		ranks() {
-			// Dense rank function
-			const getDenseRank = (totals) => {
+            const teamRanks = {};
 
-				// Get total ratings
-				const total_ratings = Object.values(totals);
+            // get unique totals
+            const uniqueTotals = [];
+            for(let i=0; i<this.teams.length; i++) {
+                const team    = this.teams[i];
+                const teamKey = `team_${team.id}`;
+                const total   = this.totals[teamKey];
+                if(!uniqueTotals.includes(total))
+                    uniqueTotals.push(total);
 
-				// Gather all unique total ratings U.
-				const U = [...new Set(total_ratings)];
+                // push to teamRanks
+                teamRanks[teamKey] = 0;
+            }
 
-				// Sort U.
-				const sortedU = U.sort((a, b) => b - a);
+            // sort uniqueTotals in descending order
+            uniqueTotals.sort((a, b) => b - a);
 
-				// Scan the individual total ratings and find their (index + 1) in U.
-				const totalRatingsRank = total_ratings.map((rating) =>
-					sortedU.indexOf(rating) + 1
-				);
+            // prepare rankGroup
+            const rankGroup = {};
 
-				// Assign dense rank to team id's keys
-				const total_ratings_rank = {};
-				Object.keys(totals).forEach((id, index) => {
-					total_ratings_rank[id] = totalRatingsRank[index];
-				});
+            // get dense rank of each team
+            const denseRanks = {};
+            for(let i=0; i<this.teams.length; i++) {
+                const team    = this.teams[i];
+                const teamKey = `team_${team.id}`;
+                const total = this.totals[teamKey];
+                const denseRank  = 1 + uniqueTotals.indexOf(total);
+                denseRanks[denseRank] = denseRank;
 
-				// return total ratings rank
-				return total_ratings_rank;
-			}
+                // push to rankGroup
+                const rankGroupKey = `rank_${denseRank}`;
+                if(!rankGroup[rankGroupKey])
+                    rankGroup[rankGroupKey] = [];
+                rankGroup[rankGroupKey].push(teamKey);
+            }
 
-			// Fractional rank function
-			const getFractionalRank = (totals) => {
+            // get fractional rank
+            let ctr = 0;
+            for(let i = 0; i < uniqueTotals.length; i++) {
+                const key = `rank_${(i + 1)}`;
+                const group = rankGroup[key];
+                const size = group.length;
+                const fractionalRank = ctr + (((size * (size + 1)) / 2) / size);
 
-				// Get dense rank
-				const denseRank = getDenseRank(totals);
+                // write fractionalRank to group members
+                for(let j = 0; j < size; j++) {
+                    teamRanks[group[j]] = fractionalRank;
+                }
 
-				// Calculate fractional rank
-				const fractionalRank = {};
-				Object.entries(totals).forEach(([id, value]) => {
-					const count = Object.values(totals).filter((x) => x === value).length;
-					fractionalRank[id] = denseRank[id] + ((count - 1) / 2);
-				});
+                ctr += size;
+            }
 
-				// Return fractional rank with team id as keys
-				const result = {};
-				Object.keys(totals).forEach((id) => {
-					result[id] = fractionalRank[id];
-				});
-
-				// Return result
-				return result;
-			}
-
-			// Filter Object if `NaN` and `undefined` is present
-			const filterObject = (obj) => {
-				// Remove NaN and undefined in the Object
-				const filteredArray = Object.entries(obj).filter((value) => {
-					return value !== undefined && !Number.isNaN(value);
-				});
-				return Object.fromEntries(filteredArray);
-			}
-
-			// Return ranks
-			return filterObject(getFractionalRank(this.totals));
-
+            return teamRanks;
 		},
 		scoreSheetHeight() {
 			return this.$store.getters.windowHeight - 64;
