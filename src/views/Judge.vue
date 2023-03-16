@@ -136,7 +136,7 @@
 							@focus.passive="updateCoordinates(criteria.length, teamIndex)"
 						/>
 					</td>
-					<td class="text-center"> {{ ranks[`team_${team.id}`] }}</td>
+					<td class="text-center">{{ ranks[`team_${team.id}`] }}</td>
 				</tr>
 			</tbody>
 			<!--	Dialog	  -->
@@ -489,51 +489,60 @@ export default {
 	},
 	computed: {
 		ranks() {
-			const teamRanks = {};
-			// get unique totals
-			const uniqueTotals = [];
-			for(let i=0; i<this.teams.length; i++) {
-				const team    = this.teams[i];
-				const teamKey = `team_${team.id}`;
-				const total   = this.totals[teamKey];
-				if(!uniqueTotals.includes(total))
-					uniqueTotals.push(total);
-				// push to teamRanks
-				teamRanks[teamKey] = 0;
-			}
-			// sort uniqueTotals in descending order
-			uniqueTotals.sort((a, b) => b - a);
-			// prepare rankGroup
-			const rankGroup = {};
-			// get dense rank of each team
-			const denseRanks = {};
-			for(let i=0; i<this.teams.length; i++) {
-				const team    = this.teams[i];
-				const teamKey = `team_${team.id}`;
-				const total = this.totals[teamKey];
-				const denseRank  = 1 + uniqueTotals.indexOf(total);
-				denseRanks[denseRank] = denseRank;
-				// push to rankGroup
-				const rankGroupKey = `rank_${denseRank}`;
-				if(!rankGroup[rankGroupKey])
-					rankGroup[rankGroupKey] = [];
-				rankGroup[rankGroupKey].push(teamKey);
-			}
-			// get fractional rank
-			let ctr = 0;
-			for(let i = 0; i < uniqueTotals.length; i++) {
-				const key = `rank_${(i + 1)}`;
-				const group = rankGroup[key];
-				const size = group.length;
-				const fractionalRank = ctr + (((size * (size + 1)) / 2) / size);
-				// write fractionalRank to group members
-				for(let j = 0; j < size; j++) {
-					teamRanks[group[j]] = fractionalRank;
-				}
-				ctr += size;
-			}
-			return teamRanks;
+            const teamRanks = {};
 
+            // get unique totals
+            const uniqueTotals = [];
+            for(let i=0; i<this.teams.length; i++) {
+                const team    = this.teams[i];
+                const teamKey = `team_${team.id}`;
+                const total   = this.totals[teamKey];
+                if(!uniqueTotals.includes(total))
+                    uniqueTotals.push(total);
+
+                // push to teamRanks
+                teamRanks[teamKey] = 0;
+            }
+
+            // sort uniqueTotals in descending order
+            uniqueTotals.sort((a, b) => b - a);
+
+            // prepare rankGroup
+            const rankGroup = {};
+
+            // get dense rank of each team
+            const denseRanks = {};
+            for(let i=0; i<this.teams.length; i++) {
+                const team    = this.teams[i];
+                const teamKey = `team_${team.id}`;
+                const total = this.totals[teamKey];
+                const denseRank  = 1 + uniqueTotals.indexOf(total);
+                denseRanks[denseRank] = denseRank;
+
+                // push to rankGroup
+                const rankGroupKey = `rank_${denseRank}`;
+                if(!rankGroup[rankGroupKey])
+                    rankGroup[rankGroupKey] = [];
+                rankGroup[rankGroupKey].push(teamKey);
+            }
+
+            // get fractional rank
+            let ctr = 0;
+            for(let i = 0; i < uniqueTotals.length; i++) {
+                const key = `rank_${(i + 1)}`;
+                const group = rankGroup[key];
+                const size = group.length;
+                const fractionalRank = ctr + (((size * (size + 1)) / 2) / size);
+
+                // write fractionalRank to group members
+                for(let j = 0; j < size; j++) {
+                    teamRanks[group[j]] = fractionalRank;
+                }
+
+                ctr += size;
+            }
+
+            return teamRanks;
 		},
 		scoreSheetHeight() {
 			return this.$store.getters.windowHeight - 64;
