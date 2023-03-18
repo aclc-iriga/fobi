@@ -334,7 +334,7 @@ class Team extends App
      *
      * @return string
      */
-    public function getcountry()
+    public function getCountry()
     {
         return $this->country;
     }
@@ -345,7 +345,7 @@ class Team extends App
      *
      * @return string
      */
-    public function getavatar()
+    public function getAvatar()
     {
         return $this->avatar;
     }
