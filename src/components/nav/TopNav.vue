@@ -46,24 +46,25 @@
 				</template>
 				<v-card class="bg-dark">
 					<v-card-title class="bg-black">
-					<v-icon>mdi-alert-circle</v-icon>	Confirm Logout
+					<v-icon>mdi-alert-circle</v-icon> Confirm Logout
 					</v-card-title>
 					<v-card-text>Are you sure you want to log out?</v-card-text>
 					<v-card-actions>
 						<v-spacer></v-spacer>
 						<v-btn
-							color="red-darken-1"
+							color="green-darken-1"
 							variant="text"
 							@click="dialog = false"
 						>
-							cancel
+							Cancel
 						</v-btn>
 						<v-btn
-							color="green-darken-1"
+							color="red-darken-1"
 							variant="text"
 							@click="signOut"
+                            :loading="signingOut"
 						>
-							ok
+							Log out
 						</v-btn>
 					</v-card-actions>
 				</v-card>
@@ -82,11 +83,13 @@ export default {
 		return {
 			dialog: false,
 			name: '',
+            signingOut: false,
 			signedOut: false
 		}
 	},
 	methods: {
 		signOut() {
+            this.signingOut = true;
 			$.ajax({
 				url: `${this.$store.getters.appURL}/index.php`,
 				type: 'POST',
@@ -100,9 +103,11 @@ export default {
 					data = JSON.parse(data);
 					this.$store.commit('auth/setUser', data.user = null);
 					this.$router.push('/');
+                    this.signingOut = false;
 				},
 				error: (error) => {
 					alert(`ERROR ${error.status}: ${error.statusText}`);
+                    this.signingOut = false;
 				},
 			})
 		},
