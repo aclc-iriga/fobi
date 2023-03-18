@@ -124,7 +124,7 @@
                 <th colspan="3" class="text-center bt br">
                     Q & A
                 </th>
-                <th rowspan="2" class="text-center bt br">
+                <th rowspan="2" class="text-center bl bt br">
                     TOTAL<br>AVERAGE
                 </th>
                 <th rowspan="2" class="text-center bt br">
@@ -137,18 +137,18 @@
                 </th>
             </tr>
             <tr class="table-secondary">
-                <th class="bl">Average</th>
+                <th class="text-center bl">Average</th>
                 <th class="text-center br">60%</th>
 
-                <th class="bl">Rank</th>
+                <th class="text-center bl">Rank</th>
                 <th class="text-center">100<br>-Rank</th>
                 <th class="text-center br">10%</th>
 
-                <th class="bl">Rank</th>
+                <th class="text-center bl">Rank</th>
                 <th class="text-center">100<br>-Rank</th>
                 <th class="text-center br">10%</th>
 
-                <th class="bl">Rank</th>
+                <th class="text-center bl">Rank</th>
                 <th class="text-center">100<br>-Rank</th>
                 <th class="text-center br">20%</th>
             </tr>
